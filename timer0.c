@@ -28,8 +28,7 @@ void en_timer_interrupt(void) {
   TIMSK0 = TIMSK0 | (0b1<<TOIE0);
 }
 
-// need to take out definition of ISR(TIM0_OVF_vect) in wiring.c and 
-// remove Stream.cpp from Java/hardware/arduino/avr/cores/arduino
+// Output sampling interrupt
 ISR(TIM0_OVF_vect) {
   PORTA = (PORTA & 0b1)^0b1;
 }
