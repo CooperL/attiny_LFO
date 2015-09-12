@@ -12,9 +12,7 @@ void init_timer(void) {
   // CS02:0  = 100: IO clock, /256 prescaler (20 MHz/256/256 = 305 Hz)
   TCCR0B = (0b0<<WGM02) | (0b100<<CS00);
   
-  // DATA DIRECTION REGISTERS
-  // DDRA0 = 1: PA0 is output DEBUG
-  DDRA = DDRA | (0b1<<PA0);
+  // DATA DIRECTION REGISTER B
   // DDRB2 = 1: PB2 is output (OC0A) DEBUG
   DDRB = (0b1<<PB2);
 }
@@ -30,5 +28,5 @@ void en_timer_interrupt(void) {
 
 // Output sampling interrupt
 ISR(TIM0_OVF_vect) {
-  PORTA = (PORTA & 0b1)^0b1;
+  // PORTA = (PORTA & 0b1)^0b1;
 }

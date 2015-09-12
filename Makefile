@@ -1,7 +1,5 @@
 # Name: Makefile
-# Author: <insert your name here>
-# Copyright: <insert your copyright message here>
-# License: <insert your license reference here>
+# Author: Cooper Loughlin
 
 # This is a prototype Makefile. Modify it according to your needs.
 # You should at least check the settings for
@@ -20,7 +18,7 @@
 DEVICE     = attiny84
 CLOCK      = 20000000
 PROGRAMMER = -c arduino -P /dev/cu.usbmodem1421 -b 19200
-OBJECTS    = main.o PWM.o timer0.o
+OBJECTS    = main.o PWM.o timer0.o ADC.o
 FUSES      = -U hfuse:w:0xdF:m -U lfuse:w:0xdF:m
 
 # ATMega8 fuse bits used above (fuse bits for other devices are different!):
