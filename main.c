@@ -30,6 +30,9 @@ int main(void) {
   // subdivion select pot
   unsigned int sub_pot;
 
+  // DEBUG -- testing gitignore
+  PORTA = 1;
+
   // loop forever
   while(1) {
     // read ADC values
