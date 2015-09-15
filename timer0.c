@@ -41,7 +41,7 @@ void en_timer_interrupt(void) {
 // Output sampling interrupt
 ISR(TIM0_COMPA_vect) {
   // update output compare register
-  OCR0A = (OCR0A + ((*freqControl)>>2))%0xFF;
+  OCR0A = (OCR0A + ((*freqControl)>>2) + 1)%0x101; // add one so OCR0A>0
   // DEBUG -- confirm interrupt timing
   // PORTB = ((PORTB>>PB2 & 0b1)^0b1)<<PB2;
   // increment phase
