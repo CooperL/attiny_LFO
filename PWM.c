@@ -14,7 +14,7 @@ void init_PWM(void) {
   
   // DATA DIRECTION REGISTER
   // DDRA6 = 1: PA6 is output (OC1A) 
-  DDRA = DDRA | (0b1<<PA6);
+  DDRA |= (0b1<<PA6);
   
   // OUTPUT COMPARE REGISTER
   // OCR1A9:0 = 0x1FF: initialize to 50% duty cycle, full scale = 0x3FF

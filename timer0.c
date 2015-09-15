@@ -13,8 +13,8 @@ void init_timer(unsigned int* fAddr, unsigned int* pAddr) {
   TCCR0B = (0b0<<WGM02) | (0b100<<CS00);
   
   // DATA DIRECTION REGISTER B
-  // DEBUG -- DDRB2 = 1: PB2 is output (OC0A) 
-  DDRB = (0b1<<PB2);
+  // DEBUG -- DDRB2 = 1: PB2 is output to confirm interrupt timing
+  DDRB |= (0b1<<PB2);
 
   // initialize frequency control address
   freqControl = fAddr;
@@ -30,7 +30,7 @@ void init_timer(unsigned int* fAddr, unsigned int* pAddr) {
 void en_timer_interrupt(void) {
   // TIMER INTERRUPT MASK REGISTER
   // OCIE0A = 0b1: enable timer0 output compare interrupt
-  TIMSK0 = TIMSK0 | (0b1<<OCIE0A);
+  TIMSK0 |= (0b1<<OCIE0A);
 
   // OUTPUT COMPARE REGISTER A
   // initialize output compare value to freq_control
@@ -42,8 +42,8 @@ void en_timer_interrupt(void) {
 ISR(TIM0_COMPA_vect) {
   // update output compare register
   OCR0A = (OCR0A + ((*freqControl)>>2))%0xFF;
-  // DEBUG
-  PORTB = ((PORTB>>PB2 & 0b1)^0b1)<<PB2;
+  // DEBUG -- confirm interrupt timing
+  // PORTB = ((PORTB>>PB2 & 0b1)^0b1)<<PB2;
   // increment phase
   *phaseAcc = (*phaseAcc + 1)%PWM_RES;
   // write PWM

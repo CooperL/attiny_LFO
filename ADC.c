@@ -26,16 +26,16 @@ void init_ADC(void) {
 // read ADC channel
 unsigned int read_ADC(unsigned int ch) {
   // turn off ADC
-  ADCSRA = ADCSRA & ~(0b1<<ADEN);
+  ADCSRA &= ~(0b1<<ADEN);
 
   // select channel from ADMUX register
   ADMUX = (ADMUX & 0b11000000) | (ch<<MUX0);
 
   // turn on ADC
-  ADCSRA = ADCSRA | (0b1<<ADEN);
+  ADCSRA |= (0b1<<ADEN);
 
   // start ADC conversion
-  ADCSRA = ADCSRA | (0b1<<ADSC);
+  ADCSRA |= (0b1<<ADSC);
 
   // wait for conversion to finish
   // ADSC is set to 1 while converting, 0 when finished
