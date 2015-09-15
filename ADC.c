@@ -1,9 +1,8 @@
 #include "ADC.h"
 
+// FUNCTION
 // initialize ADC module
 void init_ADC(void) {
-  // init ADC
-  
   // ADC MUX SELECTION REGISTER
   // REFS1:0 =     00: Vcc used as reference
   // MUX5:0  = 000000: initialize to channel 0
@@ -23,23 +22,30 @@ void init_ADC(void) {
   ADCSRB = (0b0<<BIN) | (0b0<<ADLAR);
 }
 
+// FUNCTION
 // read ADC channel
 unsigned int read_ADC(unsigned int ch) {
   // turn off ADC
   ADCSRA = ADCSRA & ~(0b1<<ADEN);
+
   // select channel from ADMUX register
   ADMUX = (ADMUX & 0b11000000) | (ch<<MUX0);
+
   // turn on ADC
   ADCSRA = ADCSRA | (0b1<<ADEN);
+
   // start ADC conversion
   ADCSRA = ADCSRA | (0b1<<ADSC);
+
   // wait for conversion to finish
-  // ADIF is set to 1 when conversion complete, 0 while converting
+  // ADSC is set to 1 while converting, 0 when finished
   while(ADCSRA & (0b1<<ADSC));
+
   // read ADC data registers
   unsigned int low = ADCL;
   unsigned int high = ADCH;
   unsigned int val = (high<<8) | low;
+
   // return
-  return val;
+  return val + ADC_OFFSET;
 }

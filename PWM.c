@@ -1,10 +1,9 @@
 #include "PWM.h"
 
+// FUNCTION
 // initialize PWM module
 // PWM output on PA6
 void init_PWM(void) {
-  // init PWM
-  
   // TIMER/COUNTER CONTROL REGISTERS
   // COM1A1:0 = 10: clear OC1A on compare match, set OC1A at bottom 
   // WGM11:10 = 11: fast PWM, 10-bit (WGM13:10 = 0111)
@@ -22,6 +21,7 @@ void init_PWM(void) {
   OCR1A = 0x1FF; 
 }
 
+// FUNCTION
 // writes analog val to PWM output
 // max val is 0x3FF
 void write_PWM(unsigned int val) {

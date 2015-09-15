@@ -1,9 +1,9 @@
 #include "timer0.h"
+#include "PWM.h"
 
+// FUNCTION
 // initialize timer0 module
-void init_timer(void) {
-  // init timer0
-  
+void init_timer(unsigned int* fAddr, unsigned int* pAddr) {
   // TIMER/COUNTER CONTROL REGISTERS
   // COM0A1:0 = 00: normal port operation, OC0A disconnected
   // WGM01:0  = 00: normal mode
@@ -13,20 +13,39 @@ void init_timer(void) {
   TCCR0B = (0b0<<WGM02) | (0b100<<CS00);
   
   // DATA DIRECTION REGISTER B
-  // DDRB2 = 1: PB2 is output (OC0A) DEBUG
+  // DEBUG -- DDRB2 = 1: PB2 is output (OC0A) 
   DDRB = (0b1<<PB2);
+
+  // initialize frequency control address
+  freqControl = fAddr;
+  // initialize phase accumulator address
+  phaseAcc = pAddr;
+
+  // enable timer interrupt
+  en_timer_interrupt();
 }
 
+// FUNCTION
 // enable timer0 interrupt
 void en_timer_interrupt(void) {
-  // enable interrupt
-  
   // TIMER INTERRUPT MASK REGISTER
-  // TOIE0 = 0b1: enable timer0 overflow interrupt
-  TIMSK0 = TIMSK0 | (0b1<<TOIE0);
+  // OCIE0A = 0b1: enable timer0 output compare interrupt
+  TIMSK0 = TIMSK0 | (0b1<<OCIE0A);
+
+  // OUTPUT COMPARE REGISTER A
+  // initialize output compare value to freq_control
+  OCR0A = *freqControl;
 }
 
+// ISR
 // Output sampling interrupt
-ISR(TIM0_OVF_vect) {
-  // PORTA = (PORTA & 0b1)^0b1;
+ISR(TIM0_COMPA_vect) {
+  // update output compare register
+  OCR0A = (OCR0A + ((*freqControl)>>2))%0xFF;
+  // DEBUG
+  PORTB = ((PORTB>>PB2 & 0b1)^0b1)<<PB2;
+  // increment phase
+  *phaseAcc = (*phaseAcc + 1)%PWM_RES;
+  // write PWM
+  OCR1A = *phaseAcc;
 }

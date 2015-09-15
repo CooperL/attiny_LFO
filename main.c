@@ -5,6 +5,12 @@
 #include "ADC.h"
 
 int main(void) {
+  // variables
+  unsigned int freqPot; // frequency pot reading
+  unsigned int wavePot; // waveform select switch reading
+  unsigned int subPot;  // subdivion select pot
+  unsigned int phase;   // phase accumulator
+
   // set clock prescale
   // CLKPCE   =    0b1: enable changes to CLKPS3:0
   // CLKPS3:0 = 0b0000: /1 prescaler
@@ -17,30 +23,20 @@ int main(void) {
   init_PWM();
 
   // initialize timer
-  init_timer();
-  en_timer_interrupt();
+  init_timer(&freqPot, &phase);
 
   // initialize ADC
   init_ADC();
 
-  // frequency pot reading
-  unsigned int freq_pot;
-  // waveform select switch reading
-  unsigned int wave_pot;
-  // subdivion select pot
-  unsigned int sub_pot;
-
-  // DEBUG -- testing gitignore
-  PORTA = 1;
-
   // loop forever
   while(1) {
     // read ADC values
-    freq_pot = read_ADC(FREQ_CV);
-    wave_pot = read_ADC(WAVE_SELECT);
-    sub_pot  = read_ADC(SUB_DIV);
-    // DEBUG -- write PWM 
-    write_PWM(freq_pot);
+    freqPot = read_ADC(FREQ_CV);
+    wavePot = read_ADC(WAVE_SELECT);
+    subPot  = read_ADC(SUB_DIV);
+
+    // DEBUG -- set output compare time using freq pot
+    // OCR0A = freq_pot>>2;
   }
 
   return(0);
