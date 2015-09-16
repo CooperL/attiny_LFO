@@ -14,7 +14,8 @@
 
 // variables
 unsigned int* freqControl;
-unsigned int* phaseAcc;
+unsigned int* subSelect;
+unsigned int phaseAcc;
 
 // function declarations
 void init_timer(unsigned int* freqControl, unsigned int* phaseAcc);

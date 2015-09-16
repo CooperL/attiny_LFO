@@ -2,7 +2,7 @@
 
 // FUNCTION
 // initialize timer0 module
-void init_timer(unsigned int* fAddr, unsigned int* pAddr) {
+void init_timer(unsigned int* fAddr, unsigned int* subAddr) {
   // TIMER/COUNTER CONTROL REGISTERS
   // COM0A1:0 = 00: normal port operation, OC0A disconnected
   // WGM01:0  = 00: normal mode
@@ -17,8 +17,10 @@ void init_timer(unsigned int* fAddr, unsigned int* pAddr) {
 
   // initialize frequency control address
   freqControl = fAddr;
-  // initialize phase accumulator address
-  phaseAcc = pAddr;
+  // initialize subdivision select address
+  subSelect = subAddr;
+  // initialize phase accumulator
+  phaseAcc = 0;
 
   // enable timer interrupt
   en_timer_interrupt();
@@ -40,11 +42,11 @@ void en_timer_interrupt(void) {
 // Output sampling interrupt
 ISR(TIM0_COMPA_vect) {
   // update output compare register
-  OCR0A = (OCR0A + ((*freqControl)>>2))%0x100; // add one so OCR0A>0
+  OCR0A = (OCR0A + (*freqControl)>>(*subSelect))%0x100; // add one so OCR0A>0
   // DEBUG -- confirm interrupt timing
   // PORTB = ((PORTB>>PB2 & 0b1)^0b1)<<PB2;
   // increment phase
-  *phaseAcc = (*phaseAcc + 1)%PWM_RES;
+  phaseAcc = (phaseAcc + 1)%PWM_RES;
   // write PWM
-  OCR1A = *phaseAcc;
+  OCR1A = phaseAcc;
 }
