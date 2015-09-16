@@ -44,8 +44,13 @@ unsigned int read_ADC(unsigned int ch) {
   // read ADC data registers
   unsigned int low = ADCL;
   unsigned int high = ADCH;
-  unsigned int val = (high<<8) | low;
+  unsigned int val = (high<<8) + low;
+
+  // prevent 0 ADC reading
+  if (val < ADC_OFFSET) {
+    val = ADC_OFFSET;
+  }
 
   // return
-  return val + ADC_OFFSET;
+  return val;
 }

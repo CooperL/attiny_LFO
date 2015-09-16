@@ -4,6 +4,9 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+#include "PWM.h"
+// #include "wavetable.h"
+
 // *****************
 // * timer0 Module *
 // *****************

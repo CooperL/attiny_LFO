@@ -31,6 +31,7 @@ int main(void) {
   // loop forever
   while(1) {
     // read ADC values
+    // freqPot = ADC_RES-1 + ADC_OFFSET - read_ADC(FREQ_CV);
     freqPot = read_ADC(FREQ_CV);
     wavePot = read_ADC(WAVE_SELECT);
     subPot  = read_ADC(SUB_DIV);
