@@ -5,7 +5,6 @@
 #include <avr/interrupt.h>
 
 #include "PWM.h"
-// #include "wavetable.h"
 
 // *****************
 // * timer0 Module *
@@ -16,6 +15,9 @@
 unsigned int* freqControl;
 unsigned int* subSelect;
 unsigned int phaseAcc;
+unsigned int overflowCount;
+unsigned int shiftedOVF;
+unsigned int compareVal;
 
 // function declarations
 void init_timer(unsigned int* freqControl, unsigned int* phaseAcc);

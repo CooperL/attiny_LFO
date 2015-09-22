@@ -42,8 +42,8 @@ unsigned int read_ADC(unsigned int ch) {
   while(ADCSRA & (0b1<<ADSC));
 
   // read ADC data registers
-  unsigned int low = ADCL;
-  unsigned int high = ADCH;
+  low = ADCL;
+  high = ADCH;
   unsigned int val = (high<<8) + low;
 
   // prevent 0 ADC reading

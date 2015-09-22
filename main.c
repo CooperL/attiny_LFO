@@ -29,21 +29,15 @@ int main(void) {
 
   // loop forever
   while(1) {
-    // read ADC values
-
+    // READ ADC VALUES
     // frequency control pot
-    // reverse scale
-    unsigned int freqPotRev = ADC_RES + ADC_OFFSET - read_ADC(FREQ_CV);
-    // divide by 4 (0-255)
-    freqPot = freqPotRev>>2;
+    // read value and reverse scale
+    freqPot = ADC_RES + ADC_OFFSET - read_ADC(FREQ_CV);
+    // wave select pot
     wavePot = read_ADC(WAVE_SELECT);
-
     // subdivision select pot
     // divide by 64
     subPot  = read_ADC(SUB_DIV)>>6;
-
-    // DEBUG -- set output compare time using freq pot
-    // OCR0A = freq_pot>>2;
   }
 
   return(0);

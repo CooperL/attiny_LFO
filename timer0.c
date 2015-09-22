@@ -21,6 +21,8 @@ void init_timer(unsigned int* fAddr, unsigned int* subAddr) {
   subSelect = subAddr;
   // initialize phase accumulator
   phaseAcc = 0;
+  // initialize overflow count
+  overflowCount = 0;
 
   // enable timer interrupt
   en_timer_interrupt();
@@ -31,22 +33,37 @@ void init_timer(unsigned int* fAddr, unsigned int* subAddr) {
 void en_timer_interrupt(void) {
   // TIMER INTERRUPT MASK REGISTER
   // OCIE0A = 0b1: enable timer0 output compare interrupt
-  TIMSK0 |= (0b1<<OCIE0A);
+  // TOIE0  = 0b1: enable timer0 overflow interrupt
+  TIMSK0 |= (0b1<<OCIE0A) | (0b1<<TOIE0);
 
   // OUTPUT COMPARE REGISTER A
-  // initialize output compare value to freq_control
-  OCR0A = *freqControl;
+  // initialize output compare value to 0
+  OCR0A = 0;
 }
 
-// ISR
+// OUTPUT COMPARE ISR
 // Output sampling interrupt
 ISR(TIM0_COMPA_vect) {
-  // update output compare register
-  OCR0A = (OCR0A + (*freqControl)>>(*subSelect))%0x100; // add one so OCR0A>0
-  // DEBUG -- confirm interrupt timing
-  // PORTB = ((PORTB>>PB2 & 0b1)^0b1)<<PB2;
-  // increment phase
-  phaseAcc = (phaseAcc + 1)%PWM_RES;
-  // write PWM
-  OCR1A = phaseAcc;
+  // adjust overflow to add to output compare register
+  shiftedOVF = overflowCount<<8;
+  // calculate output compare value
+  compareVal = shiftedOVF + OCR0A;
+  // check if adjusted output compare is met
+  if(compareVal >= *freqControl) {
+    // reset overflow count
+    overflowCount = 0;
+    // update output compare register
+    OCR0A = (OCR0A + ((*freqControl)>>2))%0x100; 
+    // increment phase
+    phaseAcc = (phaseAcc + 1)%PWM_RES;
+    // write PWM
+    OCR1A = phaseAcc;
+  }
+}
+
+// OVERFLOW ISR
+// timer overflow COUNTER
+ISR(TIM0_OVF_vect) {
+  // increment overflow counter
+  overflowCount++;
 }

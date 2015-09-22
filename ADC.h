@@ -16,6 +16,10 @@
 #define ADC_OFFSET  5        // added to ADC readings
 #define ADC_RES     1024     // ADC resolution
 
+// variables
+unsigned int high;
+unsigned int low;
+
 // function declarations
 void init_ADC(void);
 unsigned int read_ADC(unsigned int ch);
