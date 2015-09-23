@@ -11,13 +11,18 @@
 // *****************
 // The Timer0 module controls the update frequency of the PWM output.
 
+// constants
+#define FREQ_MULTIPLIER 2 // shift by two to accomodate subdivision
+						  // quantization
+
 // variables
-unsigned int* freqControl;
+unsigned int* freqPtr;
 unsigned int* subSelect;
-unsigned int phaseAcc;
-unsigned int overflowCount;
-unsigned int shiftedOVF;
-unsigned int compareVal;
+unsigned int  phaseAcc;
+unsigned int  overflowCount;
+unsigned int  shiftedOVF;
+unsigned int  compareVal;
+unsigned int  step;
 
 // function declarations
 void init_timer(unsigned int* freqControl, unsigned int* phaseAcc);

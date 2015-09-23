@@ -16,7 +16,7 @@ void init_timer(unsigned int* fAddr, unsigned int* subAddr) {
   DDRB |= (0b1<<PB2);
 
   // initialize frequency control address
-  freqControl = fAddr;
+  freqPtr = fAddr;
   // initialize subdivision select address
   subSelect = subAddr;
   // initialize phase accumulator
@@ -44,16 +44,18 @@ void en_timer_interrupt(void) {
 // OUTPUT COMPARE ISR
 // Output sampling interrupt
 ISR(TIM0_COMPA_vect) {
+  // dereference pointer
+  step = *freqPtr;
   // adjust overflow to add to output compare register
   shiftedOVF = overflowCount<<8;
   // calculate output compare value
   compareVal = shiftedOVF + OCR0A;
   // check if adjusted output compare is met
-  if(compareVal >= *freqControl) {
+  if(compareVal >= step) {
     // reset overflow count
     overflowCount = 0;
     // update output compare register
-    OCR0A = (OCR0A + ((*freqControl)>>2))%0x100; 
+    OCR0A = (OCR0A + step)%0x100; 
     // increment phase
     phaseAcc = (phaseAcc + 1)%PWM_RES;
     // write PWM
