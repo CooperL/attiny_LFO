@@ -77,9 +77,8 @@ unsigned int calc_freq(unsigned int fPot, unsigned int sPot) {
     return fQuant>>MULT_2_SHIFT;
   }
   else if(subDiv == DOT_EIGHT_SEL) {
-    // selection is dotted eighth note
-    // DEBUG -- just eights for now
-    return fQuant>>MULT_2_SHIFT;
+    unsigned int fQuantX3 = fQuant*3;
+    return fQuantX3>>MULT_4_SHIFT;
   }
   else if(subDiv == SIXT_SEL) {
     // selection is sixteenth note
