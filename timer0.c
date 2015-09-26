@@ -1,8 +1,9 @@
 #include "timer0.h"
+#include "inputCapture.h"
 
 // FUNCTION
 // initialize timer0 module
-void init_timer(unsigned int* fAddr, unsigned int* subAddr) {
+void init_timer(unsigned int* fAddr) {
   // TIMER/COUNTER CONTROL REGISTERS
   // COM0A1:0 = 00: normal port operation, OC0A disconnected
   // WGM01:0  = 00: normal mode
@@ -10,17 +11,13 @@ void init_timer(unsigned int* fAddr, unsigned int* subAddr) {
   // WGM02 = 0: normal mode
   // CS02:0  = 100: IO clock, /256 prescaler (20 MHz/256/256 = 305 Hz)
   TCCR0B = (0b0<<WGM02) | (0b100<<CS00);
-  
-  // DATA DIRECTION REGISTER B
-  // DEBUG -- DDRB2 = 1: PB2 is output to confirm interrupt timing
-  DDRB |= (0b1<<PB2);
 
   // initialize frequency control address
   freqPtr = fAddr;
-  // initialize subdivision select address
-  subSelect = subAddr;
+
   // initialize phase accumulator
   phaseAcc = 0;
+
   // initialize overflow count
   overflowCount = 0;
 
@@ -68,4 +65,6 @@ ISR(TIM0_COMPA_vect) {
 ISR(TIM0_OVF_vect) {
   // increment overflow counter
   overflowCount++;
+  // increment tempo overflow counter
+  tapOverflowCount++;
 }

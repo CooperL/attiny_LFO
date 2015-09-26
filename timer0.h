@@ -17,7 +17,6 @@
 
 // variables
 unsigned int* freqPtr;
-unsigned int* subSelect;
 unsigned int  phaseAcc;
 unsigned int  overflowCount;
 unsigned int  shiftedOVF;
@@ -25,7 +24,7 @@ unsigned int  compareVal;
 unsigned int  step;
 
 // function declarations
-void init_timer(unsigned int* freqControl, unsigned int* phaseAcc);
+void init_timer(unsigned int* freqControl);
 void en_timer_interrupt(void);
 
 #endif

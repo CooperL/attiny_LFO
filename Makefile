@@ -18,7 +18,7 @@
 DEVICE     = attiny84
 CLOCK      = 20000000
 PROGRAMMER = -c arduino -P /dev/cu.usbmodem1421 -b 19200
-OBJECTS    = main.o PWM.o timer0.o ADC.o
+OBJECTS    = main.o PWM.o timer0.o ADC.o inputCapture.o
 FUSES      = -U hfuse:w:0xdF:m -U lfuse:w:0xdF:m
 
 # ATMega8 fuse bits used above (fuse bits for other devices are different!):
