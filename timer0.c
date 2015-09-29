@@ -1,9 +1,11 @@
 #include "timer0.h"
 #include "inputCapture.h"
+#include "wavetable.h"
 
 // FUNCTION
 // initialize timer0 module
-void init_timer(unsigned int* fAddr) {
+void init_timer(unsigned int* fAddr, 
+                unsigned int* wAddr) {
   // TIMER/COUNTER CONTROL REGISTERS
   // COM0A1:0 = 00: normal port operation, OC0A disconnected
   // WGM01:0  = 00: normal mode
@@ -14,6 +16,9 @@ void init_timer(unsigned int* fAddr) {
 
   // initialize frequency control address
   freqPtr = fAddr;
+
+  // initialize wave select address
+  wavePtr = wAddr;
 
   // initialize phase accumulator
   phaseAcc = 0;
@@ -55,8 +60,54 @@ ISR(TIM0_COMPA_vect) {
     OCR0A = (OCR0A + step)%0x100; 
     // increment phase
     phaseAcc = (phaseAcc + 1)%PWM_RES;
-    // write PWM
-    OCR1A = phaseAcc;
+    // get wave number
+    waveNum = *wavePtr;
+    // write PWM based on waveform
+    if(waveNum == WAVE_RAMP) {
+      OCR1A = phaseAcc;
+    }
+    else if(waveNum == WAVE_SAW) {
+      OCR1A = PWM_RES - phaseAcc;
+    } 
+    else if(waveNum == WAVE_TRI) {
+      if(phaseAcc < PWM_RES>>1) {
+        OCR1A = 2*phaseAcc;
+      }
+      else {
+        OCR1A = PWM_RES - (2*(phaseAcc - (PWM_RES>>1)));
+      }
+    } 
+    else if(waveNum == WAVE_SQUARE) {
+      if(phaseAcc < PWM_RES>>1) {
+        OCR1A = 0;
+      }
+      else {
+        OCR1A = PWM_RES - 1;
+      }
+    } 
+    // we need to use a wave table
+    else {
+      // calculate remainder
+      rem1 = PWM_RES%TABLE_LEN;
+      rem2 = PWM_RES%SHORT_TABLE_LEN;
+      idx1 = phaseAcc>>2;
+      idx2 = phaseAcc>>3;
+      if(waveNum == WAVE_SINE) {
+        diff = (int) sine[idx1] - (int) sine[(idx1 + 1)%TABLE_LEN];
+        interp = rem1*diff;
+        OCR1A = sine[idx1]<<2 + interp;
+      } 
+      else if(waveNum == WAVE_SWEEP) {
+        diff = (int) spike[idx2] - (int) spike[(idx2 + 1)%SHORT_TABLE_LEN];
+        interp = rem2*diff;
+        OCR1A = (spike[idx2]<<2) + interp;
+      } 
+      else if(waveNum == WAVE_SPIKE) {
+        diff = (int) spike[idx2] - (int) spike[(idx2 + 1)%SHORT_TABLE_LEN];
+        interp = rem2*diff;
+        OCR1A = (spike[idx2]<<2) + interp;
+      }
+    }
   }
 }
 

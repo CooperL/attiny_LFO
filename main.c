@@ -6,6 +6,12 @@
 #include "inputCapture.h"
 
 // CONSTANTS
+#define MULT_4096_SHIFT  12  // shift to mult/div by 4096
+#define MULT_1024_SHIFT  10  // shift to mult/div by 1024
+#define MULT_128_SHIFT   7   // shift to mult/div by 128
+#define MULT_4_SHIFT     2   // shift to mult/div by 4
+#define MULT_2_SHIFT     1   // shift to mult/div by 2
+#define WAVE_DIV         146 // value to divide wav pot reading by
 
 // FUNCTION DECLARATIONS
 unsigned int calc_freq(unsigned int  fPot, 
@@ -20,6 +26,7 @@ int main(void) {
   unsigned int  subPot;  // subdivion select pot
   unsigned int  freqCon; // frequency control value
   unsigned long tapVal;  // tap tempo counter
+  unsigned int  waveSel; // wave selection value
 
   // set clock prescale
   // CLKPCE   =    0b1: enable changes to CLKPS3:0
@@ -33,7 +40,7 @@ int main(void) {
   init_PWM();
 
   // initialize timer
-  init_timer(&freqCon);
+  init_timer(&freqCon, &waveSel);
 
   // initialize ADC
   init_ADC();
@@ -53,6 +60,10 @@ int main(void) {
 
     // CALCULATE FREQUENCY CONTROL VALUE
     freqCon = calc_freq(freqPot, subPot, tapVal);
+
+    // CALCULATE WAVE SELECTION
+    // divide by 36 to scale from 0-7
+    waveSel = wavePot/WAVE_DIV;
   }
 
   return(0);
@@ -64,10 +75,6 @@ int main(void) {
 
 // function specific constants
 #define SUB_DIV_SHIFT    8  // shift sub pot by value
-#define MULT_4096_SHIFT  12 // shift to mult/div by 4096
-#define MULT_1024_SHIFT  10 // shift to mult/div by 1024
-#define MULT_4_SHIFT     2  // shift to mult/div by 4
-#define MULT_2_SHIFT     1  // shift to mult/div by 2
 #define QUARTER_SEL      0  // possible subdivision selection ID
 #define EIGHT_SEL        1  // possible subdivision selection ID
 #define DOT_EIGHT_SEL    2  // possible subdivision selection ID
@@ -84,12 +91,13 @@ unsigned int calc_freq(unsigned int  fPot,
     // reverse and scale scale, CW = high freq, CCW = low freq
     freq = (unsigned long) (ADC_RES + ADC_OFFSET - fPot)>>MULT_2_SHIFT;
   }
-  // // reverse and scale scale, CW = high freq, CCW = low freq
-  // unsigned int fPotRev = (ADC_RES + ADC_OFFSET - fPot)>>MULT_2_SHIFT;
+
   // scale subdivision from 0 to 3 (divide by 64)
   unsigned int subDiv = sPot>>SUB_DIV_SHIFT;
+
   // quantize fPotRev to increments of 4
   unsigned int fQuant = (freq>>MULT_4_SHIFT)<<MULT_4_SHIFT;
+
   // calculate freq control value from subdivision
   if(subDiv == EIGHT_SEL) {
     // selection is eighth note
