@@ -14,14 +14,18 @@
 #define WAVE_DIV         146 // value to divide wav pot reading by
 #define TAP_DIV          2   // value to divide tap val by
 #define SUB_DIV_SHIFT    8   // shift sub pot by value
-#define CHANGE_PAD       1   // update freq state if freq pot has 
+#define CHANGE_PAD       2   // update freq state if freq pot has 
                              // changed by more than this number
+#define BUFF_SIZE        5   // size of freq pot buffer
 
 // FUNCTION DECLARATIONS
 unsigned int calc_freq(unsigned int  fPot, 
                        unsigned int  sPot,
                        unsigned long tap,
                        unsigned int  state);
+unsigned int checkFreqPotChange(unsigned int curr, 
+                                unsigned int* buffer, 
+                                unsigned int* idxPtr);
 
 // MAIN
 int main(void) {
@@ -35,6 +39,10 @@ int main(void) {
   unsigned int  waveSel;     // wave selection value
   unsigned int  freqState;   // variable that says whether freq is 
                              // controlled by pot or tap
+
+  unsigned int  freqPotBuff[BUFF_SIZE];  // buffer for storing past 
+                                         // freq pot vals
+  unsigned int  buffIdx;                 // buffer Idx
 
   // set clock prescale
   // CLKPCE   =    0b1: enable changes to CLKPS3:0
@@ -59,6 +67,13 @@ int main(void) {
   // initialize freq con state
   freqState = STATE_POT;
 
+  // initialize buffer stuff
+  unsigned int i;
+  for (i=0; i<BUFF_SIZE; i++) {
+    freqPotBuff[i] = 0;
+  }
+  buffIdx = 0;
+
   // LOOP FOREVER
   while(1) {
     // READ ADC VALs
@@ -72,11 +87,17 @@ int main(void) {
 
     // determine if freq control is back to pot
     // check if freq pot has changed
-    if(freqState == STATE_TAP) {
-      if(freqPot < prevFreqPot - CHANGE_PAD ||
-         freqPot > prevFreqPot + CHANGE_PAD) {
-        freqState = STATE_POT;
-      }
+    unsigned int potChange =  checkFreqPotChange(freqPot, 
+                                                 freqPotBuff,
+                                                 &buffIdx);
+    // if(freqState == STATE_TAP) {
+    //   if(freqPot < prevFreqPot - CHANGE_PAD ||
+    //      freqPot > prevFreqPot + CHANGE_PAD) {
+    //     freqState = STATE_POT;
+    //   }
+    // }
+    if(potChange) {
+      freqState = STATE_POT;
     }
 
     // CALCULATE FREQUENCY CONTROL VALUE
@@ -92,6 +113,7 @@ int main(void) {
 
 // FUNCTION DEFINITIONS
 
+// FUNCTION
 // calculates a frequency control value to be used in timer0
 
 // function specific constants
@@ -138,3 +160,60 @@ unsigned int calc_freq(unsigned int  fPot,
     return fQuant;
   }
 }
+
+// FUNCTION
+// checks if freq pot has changed
+
+// function specific constants
+#define DIFF_THRESH 3
+
+unsigned int checkFreqPotChange(unsigned int curr,
+                                unsigned int* buffer,
+                                unsigned int* idxPtr) {
+  
+  unsigned int idx = *idxPtr;
+  unsigned int posCount = 0;
+  unsigned int negCount = 0;
+  unsigned int isChange = 0; // default to no change
+
+  // update buffer
+  buffer[idx] = curr;
+
+  // determine if there is a change
+  unsigned int i;
+  for(i=1; i<BUFF_SIZE; i++) {
+    // take difference
+    unsigned int diff = buffer[i] - buffer[i-1];
+
+    // check if diff is pos or neg
+    if(diff > 0) {
+      posCount++;
+    } 
+    else if(diff < 0) {
+      negCount++;
+    }
+  }
+
+  // if a thresh of pos or neg diffs is reached, 
+  // we know pot is being adjusted
+  if(posCount >= DIFF_THRESH ||
+     negCount >= DIFF_THRESH) {
+
+    // there is a change in pot val
+    isChange = 1;
+  }
+
+  // increment index
+  *idxPtr = (idx + 1)%BUFF_SIZE;
+
+  // return
+  return isChange;
+}
+
+
+
+
+
+
+
+

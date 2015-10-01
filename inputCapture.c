@@ -48,10 +48,11 @@ void en_in_cap_interrupt(void) {
 // INPUT CAPTURE ISR
 // input pin change interrupt
 ISR(PCINT0_vect) {
-	// freq state is tap
-	*statePtr = STATE_TAP;
 	// check for bouncing
 	if(tapOverflowCount >= BOUNCE_TIME) {
+		// freq state is tap
+		*statePtr = STATE_TAP;
+		
 		// DEBUG -- toggle output to check bouncing
 		PORTB = ((PORTB>>PB2)^1)<<PB2;
 
