@@ -2,7 +2,8 @@
 
 // FUNCTION
 // initialize input capture module
-void init_in_cap(unsigned long* tapAddr) {
+void init_in_cap(unsigned long* tapAddr, 
+	             unsigned int* stateAddr) {
   // DATA DIRECTION REGISTER
   // DDRA3 = 0: PA3 is input
   DDRA &= ~(0b1<<PA3);
@@ -18,8 +19,11 @@ void init_in_cap(unsigned long* tapAddr) {
   // initialize tap overflow count
   tapOverflowCount = 0;
 
-  // initialize tap time
+  // initialize tap time ptr
   tapTimePtr = tapAddr;
+
+  // initialzie state ptr
+  statePtr = stateAddr;
 
   // enable interrupt
   en_in_cap_interrupt();
@@ -44,6 +48,8 @@ void en_in_cap_interrupt(void) {
 // INPUT CAPTURE ISR
 // input pin change interrupt
 ISR(PCINT0_vect) {
+	// freq state is tap
+	*statePtr = STATE_TAP;
 	// check for bouncing
 	if(tapOverflowCount >= BOUNCE_TIME) {
 		// DEBUG -- toggle output to check bouncing

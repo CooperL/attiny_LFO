@@ -12,21 +12,29 @@
 #define MULT_4_SHIFT     2   // shift to mult/div by 4
 #define MULT_2_SHIFT     1   // shift to mult/div by 2
 #define WAVE_DIV         146 // value to divide wav pot reading by
+#define TAP_DIV          2   // value to divide tap val by
+#define SUB_DIV_SHIFT    8   // shift sub pot by value
+#define CHANGE_PAD       1   // update freq state if freq pot has 
+                             // changed by more than this number
 
 // FUNCTION DECLARATIONS
 unsigned int calc_freq(unsigned int  fPot, 
                        unsigned int  sPot,
-                       unsigned long tap);
+                       unsigned long tap,
+                       unsigned int  state);
 
 // MAIN
 int main(void) {
   // variables
-  unsigned int  freqPot; // frequency pot reading
-  unsigned int  wavePot; // waveform select switch reading
-  unsigned int  subPot;  // subdivion select pot
-  unsigned int  freqCon; // frequency control value
-  unsigned long tapVal;  // tap tempo counter
-  unsigned int  waveSel; // wave selection value
+  unsigned int  freqPot;     // frequency pot reading
+  unsigned int  wavePot;     // waveform select switch reading
+  unsigned int  subPot;      // subdivion select pot
+  unsigned int  prevFreqPot; // previous frequency pot value
+  unsigned int  freqCon;     // frequency control value
+  unsigned long tapVal;      // tap tempo counter
+  unsigned int  waveSel;     // wave selection value
+  unsigned int  freqState;   // variable that says whether freq is 
+                             // controlled by pot or tap
 
   // set clock prescale
   // CLKPCE   =    0b1: enable changes to CLKPS3:0
@@ -46,20 +54,33 @@ int main(void) {
   init_ADC();
 
   // initialize input capture
-  init_in_cap(&tapVal);
+  init_in_cap(&tapVal, &freqState);
+
+  // initialize freq con state
+  freqState = STATE_POT;
 
   // LOOP FOREVER
   while(1) {
     // READ ADC VALs
     // frequency control pot
+    prevFreqPot = freqPot;
     freqPot = read_ADC(FREQ_CV);
     // wave select pot
     wavePot = read_ADC(WAVE_SELECT);
     // subdivision select pot
     subPot  = read_ADC(SUB_DIV);
 
+    // determine if freq control is back to pot
+    // check if freq pot has changed
+    if(freqState == STATE_TAP) {
+      if(freqPot < prevFreqPot - CHANGE_PAD ||
+         freqPot > prevFreqPot + CHANGE_PAD) {
+        freqState = STATE_POT;
+      }
+    }
+
     // CALCULATE FREQUENCY CONTROL VALUE
-    freqCon = calc_freq(freqPot, subPot, tapVal);
+    freqCon = calc_freq(freqPot, subPot, tapVal, freqState);
 
     // CALCULATE WAVE SELECTION
     // divide by 36 to scale from 0-7
@@ -74,7 +95,6 @@ int main(void) {
 // calculates a frequency control value to be used in timer0
 
 // function specific constants
-#define SUB_DIV_SHIFT    8  // shift sub pot by value
 #define QUARTER_SEL      0  // possible subdivision selection ID
 #define EIGHT_SEL        1  // possible subdivision selection ID
 #define DOT_EIGHT_SEL    2  // possible subdivision selection ID
@@ -82,12 +102,14 @@ int main(void) {
 
 unsigned int calc_freq(unsigned int  fPot, 
                        unsigned int  sPot, 
-                       unsigned long tapVal) {
+                       unsigned long tapVal,
+                       unsigned int  state) {
   unsigned long freq;
   // check to see if pot or tap tempo is controlling freq
-  if(1) {
-    freq = tapVal>>2;
-  } else {
+  if(state == STATE_TAP) {
+    freq = tapVal>>TAP_DIV;
+  } 
+  else if(state == STATE_POT) {
     // reverse and scale scale, CW = high freq, CCW = low freq
     freq = (unsigned long) (ADC_RES + ADC_OFFSET - fPot)>>MULT_2_SHIFT;
   }

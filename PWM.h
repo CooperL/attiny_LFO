@@ -10,7 +10,8 @@
 // resolution of 10 bits and a sampling frequency of 19.5 kHz (20 MHz/1024).
 
 // constants
-#define PWM_RES 1024
+#define PWM_RES      1024
+#define HALF_PWM_RES 512
 
 // function declarations
 void init_PWM(void);

@@ -18,13 +18,17 @@
 					   // to switch input, this is way too long
 #define TAP_TIMEOUT    // time to wait until frequency control goes to 
 					   // pot
+#define STATE_POT   0   // freq is controlled by pot
+#define STATE_TAP   1   // freq is controlled by tap
 
 // variables
-unsigned int   tapOverflowCount;
+unsigned long  tapOverflowCount;
+unsigned int*  statePtr;
 unsigned long* tapTimePtr;
 
 // function declarations
-void init_in_cap(unsigned long* tapAddr);
+void init_in_cap(unsigned long* tapAddr, 
+	             unsigned int*  stateAddr);
 void en_in_cap_interrupt(void);
 
 #endif

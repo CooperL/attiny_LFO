@@ -95,10 +95,10 @@ ISR(TIM0_COMPA_vect) {
       if(waveNum == WAVE_SINE) {
         diff = (int) sine[idx1] - (int) sine[(idx1 + 1)%TABLE_LEN];
         interp = rem1*diff;
-        OCR1A = sine[idx1]<<2 + interp;
+        OCR1A = (sine[idx1]<<2) + interp;
       } 
       else if(waveNum == WAVE_SWEEP) {
-        diff = (int) spike[idx2] - (int) spike[(idx2 + 1)%SHORT_TABLE_LEN];
+        diff = (int) spike[idx2]<<1 - (int) spike[(idx2 + 1)%SHORT_TABLE_LEN];
         interp = rem2*diff;
         OCR1A = (spike[idx2]<<2) + interp;
       } 
