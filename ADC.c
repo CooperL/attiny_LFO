@@ -31,7 +31,7 @@ unsigned int read_ADC(unsigned int ch) {
   // select channel from ADMUX register
   ADMUX = (ADMUX & 0b11000000) | (ch<<MUX0);
 
-  // turn on ADC
+  // turn on ADC u fuck
   ADCSRA |= (0b1<<ADEN);
 
   // start ADC conversion
