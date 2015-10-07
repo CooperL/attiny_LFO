@@ -52,9 +52,9 @@ ISR(PCINT0_vect) {
 	if(tapOverflowCount >= BOUNCE_TIME) {
 		// freq state is tap
 		*statePtr = STATE_TAP;
-		
+
 		// DEBUG -- toggle output to check bouncing
-		PORTB = ((PORTB>>PB2)^1)<<PB2;
+		// PORTB = ((PORTB>>PB2)^1)<<PB2;
 
 		// record time
 		*tapTimePtr = tapOverflowCount;

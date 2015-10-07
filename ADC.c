@@ -13,13 +13,17 @@ void init_ADC(void) {
   // ADSC    =   0: do not start conversion
   // ADATE   =   0: do not enable auto trigger mode
   // ADIE    =   0: do not enable ADC interrupt
-  // ADPS2:0 = 111: divide clock by 128
-  ADCSRA = (0b1<<ADEN) | (0b0<<ADSC) | (0b0<<ADATE) | (0b0<<ADIE) | (0b111<<ADPS0);
+  // ADPS2:0 = 110: divide clock by 64
+  ADCSRA = (0b1<<ADEN) | (0b0<<ADSC) | (0b0<<ADATE) | (0b0<<ADIE) | (0b110<<ADPS0);
   
   // ADC CONTROL AND STATUS REGISTER B
   // BIN   = 0: unipolar mode
   // ADLAR = 0: right adjust
   ADCSRB = (0b0<<BIN) | (0b0<<ADLAR);
+
+  // DIGITAL INPUT DISABLE
+  // DIDR0:2 = 1: turn off digital input on these pins
+  DIDR0 = 0b111;
 }
 
 // FUNCTION

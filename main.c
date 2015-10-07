@@ -16,7 +16,7 @@
 #define SUB_DIV_SHIFT    8   // shift sub pot by value
 #define CHANGE_PAD       2   // update freq state if freq pot has 
                              // changed by more than this number
-#define BUFF_SIZE        5   // size of freq pot buffer
+#define BUFF_SIZE        4   // size of freq pot buffer
 
 // FUNCTION DECLARATIONS
 unsigned int calc_freq(unsigned int  fPot, 
@@ -76,6 +76,12 @@ int main(void) {
 
   // LOOP FOREVER
   while(1) {
+    // determine if freq control is back to pot
+    // check if freq pot has changed
+    unsigned int potChange =  checkFreqPotChange(freqPot, 
+                                                 freqPotBuff,
+                                                 &buffIdx);
+
     // READ ADC VALs
     // frequency control pot
     prevFreqPot = freqPot;
@@ -85,17 +91,22 @@ int main(void) {
     // subdivision select pot
     subPot  = read_ADC(SUB_DIV);
 
-    // determine if freq control is back to pot
-    // check if freq pot has changed
-    unsigned int potChange =  checkFreqPotChange(freqPot, 
-                                                 freqPotBuff,
-                                                 &buffIdx);
     // if(freqState == STATE_TAP) {
     //   if(freqPot < prevFreqPot - CHANGE_PAD ||
     //      freqPot > prevFreqPot + CHANGE_PAD) {
     //     freqState = STATE_POT;
     //   }
     // }
+
+    // DEBUG -- check pot change
+    // if((prevFreqPot>>3) != (freqPot>>3)) {
+    //   PORTB |= 1<<PB2;
+    // }
+    // else {
+    //   PORTB &= ~(1<<PB2);
+    // }
+
+    // check if pot has changed
     if(potChange) {
       freqState = STATE_POT;
     }
@@ -165,42 +176,41 @@ unsigned int calc_freq(unsigned int  fPot,
 // checks if freq pot has changed
 
 // function specific constants
-#define DIFF_THRESH 3
+#define DIFF_THRESH 2
 
-unsigned int checkFreqPotChange(unsigned int curr,
+unsigned int checkFreqPotChange(unsigned int  curr,
                                 unsigned int* buffer,
                                 unsigned int* idxPtr) {
   
-  unsigned int idx = *idxPtr;
-  unsigned int posCount = 0;
-  unsigned int negCount = 0;
+  unsigned int idx      = *idxPtr;
   unsigned int isChange = 0; // default to no change
+  unsigned int sum      = 0;
 
   // update buffer
   buffer[idx] = curr;
 
   // determine if there is a change
   unsigned int i;
-  for(i=1; i<BUFF_SIZE; i++) {
-    // take difference
-    unsigned int diff = buffer[i] - buffer[i-1];
-
-    // check if diff is pos or neg
-    if(diff > 0) {
-      posCount++;
-    } 
-    else if(diff < 0) {
-      negCount++;
-    }
+  for(i=0; i<BUFF_SIZE; i++) {
+    // take sum
+    sum += buffer[i];
   }
+
+  // take average
+  unsigned int avg = sum/BUFF_SIZE;
 
   // if a thresh of pos or neg diffs is reached, 
   // we know pot is being adjusted
-  if(posCount >= DIFF_THRESH ||
-     negCount >= DIFF_THRESH) {
-
+  if(avg < (curr-DIFF_THRESH) || 
+     avg > (curr+DIFF_THRESH)) {
     // there is a change in pot val
     isChange = 1;
+
+    // DEBUG
+    PORTB |= 1<<PB2;
+  }
+  else {
+    PORTB &= ~(1<<PB2);
   }
 
   // increment index
