@@ -11,7 +11,7 @@
 #define MULT_128_SHIFT   7   // shift to mult/div by 128
 #define MULT_4_SHIFT     2   // shift to mult/div by 4
 #define MULT_2_SHIFT     1   // shift to mult/div by 2
-#define WAVE_DIV         146 // value to divide wav pot reading by
+#define WAVE_DIV         204 // value to divide wav pot reading by
 #define TAP_DIV          2   // value to divide tap val by
 #define SUB_DIV_SHIFT    8   // shift sub pot by value
 #define CHANGE_PAD       2   // update freq state if freq pot has 
@@ -66,7 +66,6 @@ int main(void) {
   while(1) {
     // READ ADC VALs
     // frequency control pot
-    prevFreqPot = freqPot;
     freqPot = read_ADC(FREQ_CV);
     // wave select pot
     wavePot = read_ADC(WAVE_SELECT);
@@ -82,7 +81,7 @@ int main(void) {
     freqCon = calc_freq(freqPot, subPot, tapVal, freqState);
 
     // CALCULATE WAVE SELECTION
-    // divide by 36 to scale from 0-7
+    // divide by WAVE_DIV to scale from 0-4
     waveSel = wavePot/WAVE_DIV;
   }
 

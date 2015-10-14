@@ -15,12 +15,12 @@
 #define FREQ_MULTIPLIER 2 // shift by two to accomodate subdivision
 						  // quantization
 #define WAVE_RAMP   0
-#define WAVE_SAW    1
-#define WAVE_TRI    2
-#define WAVE_SQUARE 3
-#define WAVE_SINE   4
-#define WAVE_SWEEP  5
-#define WAVE_SPIKE  7
+#define WAVE_TRI    1
+#define WAVE_SQUARE 2
+#define WAVE_SINE   3
+#define WAVE_LUMPS  4
+
+#define NUM_WAVES   5
 
 // variables
 unsigned int* freqPtr;
@@ -31,12 +31,12 @@ unsigned int  shiftedOVF;
 unsigned int  compareVal;
 unsigned int  step;
 unsigned int  waveNum;
-unsigned int  rem1;
-unsigned int  rem2;
-unsigned int  idx1;
-unsigned int  idx2;
+unsigned int  rem;
+unsigned int  idx;
 int           diff;
 int 		  interp;
+int           curr;
+int           next;
 
 // function declarations
 void init_timer(unsigned int* freqControl, 

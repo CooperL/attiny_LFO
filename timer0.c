@@ -66,15 +66,12 @@ ISR(TIM0_COMPA_vect) {
     if(waveNum == WAVE_RAMP) {
       OCR1A = phaseAcc;
     }
-    else if(waveNum == WAVE_SAW) {
-      OCR1A = PWM_RES - phaseAcc;
-    } 
     else if(waveNum == WAVE_TRI) {
       if(phaseAcc < PWM_RES>>1) {
-        OCR1A = 2*phaseAcc;
+        OCR1A = phaseAcc<<1;
       }
       else {
-        OCR1A = PWM_RES - (2*(phaseAcc - (PWM_RES>>1)));
+        OCR1A = PWM_RES - ((phaseAcc - (PWM_RES>>1))<<1) - 1;
       }
     } 
     else if(waveNum == WAVE_SQUARE) {
@@ -88,25 +85,35 @@ ISR(TIM0_COMPA_vect) {
     // we need to use a wave table
     else {
       // calculate remainder
-      rem1 = PWM_RES%TABLE_LEN;
-      rem2 = PWM_RES%SHORT_TABLE_LEN;
-      idx1 = phaseAcc>>2;
-      idx2 = phaseAcc>>3;
-      if(waveNum == WAVE_SINE) {
-        diff = (int) sine[idx1] - (int) sine[(idx1 + 1)%TABLE_LEN];
-        interp = rem1*diff;
-        OCR1A = (sine[idx1]<<2) + interp;
+      rem = phaseAcc%4;
+      // scale index from 0-255
+      idx = phaseAcc>>2;
+      if(waveNum == WAVE_LUMPS) {
+        // calculate difference between next wave val and current
+        diff = (int) lumps[(idx + 1)%TABLE_LEN] - (int) lumps[idx];
+        // calculate interpolation factor
+        interp = rem*diff;
+        // add interpolation factor
+        OCR1A = (lumps[idx]<<2) + interp;
       } 
-      else if(waveNum == WAVE_SWEEP) {
-        diff = (int) spike[idx2]<<1 - (int) spike[(idx2 + 1)%SHORT_TABLE_LEN];
-        interp = rem2*diff;
-        OCR1A = (spike[idx2]<<2) + interp;
+      else if(waveNum == WAVE_SINE) {
+        // get current wave val
+        curr = lumps[(idx<<1)%TABLE_LEN]<<1;
+        // get next wave val
+        next = lumps[((idx + 1)<<1)%TABLE_LEN]<<1;
+        // check if it should be negative
+        if(idx == TABLE_LEN) {
+          curr = -curr;
+        }
+        else if(idx > TABLE_LEN>>1) {
+          curr = -curr;
+          next = -next;
+        }
+        // calculate difference between next wave val and current
+        diff = (int) next - (int) curr;
+        interp = rem*diff;
+        OCR1A = curr + interp + (PWM_RES>>1);
       } 
-      else if(waveNum == WAVE_SPIKE) {
-        diff = (int) spike[idx2] - (int) spike[(idx2 + 1)%SHORT_TABLE_LEN];
-        interp = rem2*diff;
-        OCR1A = (spike[idx2]<<2) + interp;
-      }
     }
   }
 }
