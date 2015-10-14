@@ -11,7 +11,7 @@
 #define MULT_128_SHIFT   7   // shift to mult/div by 128
 #define MULT_4_SHIFT     2   // shift to mult/div by 4
 #define MULT_2_SHIFT     1   // shift to mult/div by 2
-#define WAVE_DIV         204 // value to divide wav pot reading by
+#define WAVE_DIV         205 // value to divide wav pot reading by
 #define TAP_DIV          2   // value to divide tap val by
 #define SUB_DIV_SHIFT    8   // shift sub pot by value
 #define CHANGE_PAD       2   // update freq state if freq pot has 
