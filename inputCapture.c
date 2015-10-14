@@ -12,10 +12,6 @@ void init_in_cap(unsigned long* tapAddr,
   // PORTA3 = 0: no pullup resistor
   PORTA &= ~(0b1<<PA3);
 
-  // DATA DIRECTION REGISTER B
-  // DEBUG -- DDRB2 = 1: PB2 is output to confirm switch input
-  DDRB |= (0b1<<PB2);
-
   // initialize tap overflow count
   tapOverflowCount = 0;
 
@@ -52,9 +48,6 @@ ISR(PCINT0_vect) {
 	if(tapOverflowCount >= BOUNCE_TIME) {
 		// freq state is tap
 		*statePtr = STATE_TAP;
-
-		// DEBUG -- toggle output to check bouncing
-		// PORTB = ((PORTB>>PB2)^1)<<PB2;
 
 		// record time
 		*tapTimePtr = tapOverflowCount;
