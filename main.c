@@ -99,6 +99,9 @@ int main(void) {
        (tapOverflowCount >= SWELL_TIME)) {
       freqState = STATE_SWELL;
     }
+    else if(tapOverflowCount <= BOUNCE_TIME) {
+      freqState = STATE_TAP;
+    }
     // switch to pot control if pot rolled back
     else if(freqPot == ADC_OFFSET) {
       freqState = STATE_POT;

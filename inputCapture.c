@@ -47,7 +47,7 @@ ISR(PCINT0_vect) {
 	// check for bouncing
 	if(tapOverflowCount >= BOUNCE_TIME) {
 		// freq state is tap
-		*statePtr = STATE_TAP;
+		// *statePtr = STATE_TAP;
 
 		// record time
 		*tapTimePtr = tapOverflowCount;
