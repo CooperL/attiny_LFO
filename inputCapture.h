@@ -4,6 +4,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+#include "constants.h"
 #include "timer0.h"
 
 // ************************
@@ -13,13 +14,12 @@
 // tap tempo input input 
 
 // Constants
-#define BOUNCE_TIME 40 // 40*1/305 = 130 ms, time to wait for bouncing
-					   // experimentally determined, should add filter 
-					   // to switch input, this is way too long
-#define TAP_TIMEOUT    // time to wait until frequency control goes to 
-					   // pot
-#define STATE_POT   0   // freq is controlled by pot
-#define STATE_TAP   1   // freq is controlled by tap
+#define BOUNCE_TIME 40  // 40*1/305 = 130 ms, time to wait for bouncing
+					    // experimentally determined, should add filter 
+					    // to switch input, this is way too long
+#define SWELL_TIME  100 // time button is depressed to switch to swell
+#define TAP_TIMEOUT     // time to wait until frequency control goes to 
+					    // pot
 
 // variables
 unsigned long  tapOverflowCount;

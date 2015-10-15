@@ -4,6 +4,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+#include "constants.h"
 #include "PWM.h"
 
 // *****************

@@ -3,6 +3,8 @@
 
 #include <avr/io.h>
 
+#include "constants.h"
+
 // **************
 // * PWM Module *
 // **************

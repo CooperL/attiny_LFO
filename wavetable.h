@@ -1,6 +1,8 @@
 #ifndef WAVETABLE_H
 #define WAVETABLE_H
 
+#include "constants.h"
+
 // **************
 // * Wavetables *
 // **************
