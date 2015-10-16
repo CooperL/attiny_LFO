@@ -27,32 +27,40 @@
 #define SIXT_SEL         3  // possible subdivision selection ID
 
 // OTHER
-#define SWELL_DEC        1   // amount to decrease freqCon each 
-                             // swell sample period
-#define SWELL_PER        100 // number of loops to wait to update
-                             // freqCon in swell state, 
-                             // experimentally determined
+#define SWELL_DEC        1    // amount to decrease freqCon each 
+                              // swell sample period
+#define SWELL_PER        100  // number of loops to wait to update
+                              // freqCon in swell state, 
+                              // experimentally determined
 
 // FUNCTION DECLARATIONS
 unsigned int calc_freq(unsigned int  fPot,
                        unsigned int  sPot,
-                       unsigned long tap,
+                       unsigned long tVal,
+                       unsigned long prevtVal,
                        unsigned int  state,
+                       unsigned int  prevState,
                        unsigned int  fCon,
                        unsigned int  count);
+void updateState(unsigned int  new,
+                 unsigned int* statePtr,
+                 unsigned int* prevPtr);
 
 // MAIN
 int main(void) {
   // variables
-  unsigned int  freqPot;     // frequency pot reading
-  unsigned int  wavePot;     // waveform select switch reading
-  unsigned int  subPot;      // subdivion select pot
-  unsigned int  freqCon;     // frequency control value
-  unsigned long tapVal;      // tap tempo counter
-  unsigned int  waveSel;     // wave selection value
-  unsigned int  freqState;   // variable that says whether freq is 
-                             // controlled by pot or tap
-  unsigned int  loopCount;   // counts number of loops, mod by SWELL_PER
+  unsigned int  freqPot;       // frequency pot reading
+  unsigned int  wavePot;       // waveform select switch reading
+  unsigned int  subPot;        // subdivion select pot
+  unsigned int  freqCon;       // frequency control value
+  unsigned long tapVal;        // tap tempo counter
+  unsigned long prevTapVal;    // tap val before state -> swell
+  unsigned int  waveSel;       // wave selection value
+  unsigned int  freqState;     // variable that says whether freq is 
+                               // controlled by pot or tap or swell
+  unsigned int  prevFreqState; // previous freqState
+  unsigned int  loopCount;     // counts number of loops, mod by SWELL_PER
+  unsigned int  pressed;       // 1 while button is pressed, 0 otherwise
 
   // set clock prescale
   // CLKPCE   =    0b1: enable changes to CLKPS3:0
@@ -72,10 +80,12 @@ int main(void) {
   init_ADC();
 
   // initialize input capture
-  init_in_cap(&tapVal, &freqState);
+  pressed = 0;
+  init_in_cap(&tapVal, &freqState, &pressed);
 
   // initialize freq con state
-  freqState = STATE_POT;
+  prevFreqState = STATE_POT;
+  freqState     = STATE_POT;
 
   // initialize loop counter
   loopCount = 0;
@@ -94,24 +104,49 @@ int main(void) {
     // subdivision select pot
     subPot  = read_ADC(SUB_DIV);
 
+    // STATE SWITCHING
+
+    // SWELL
     // if tap is held down, switch to swell
-    if((PINA & (0b1<<PA3)) && 
-       (tapOverflowCount >= SWELL_TIME)) {
-      freqState = STATE_SWELL;
+    if((PINA & (0b1<<PA3)) 
+       && (tapVal >= SWELL_TIME)) {
+      pressed = 0;
+      // capture tap tempo
+      prevTapVal = tapVal;
+      updateState(STATE_SWELL, &freqState, &prevFreqState);
     }
-    else if(tapOverflowCount <= BOUNCE_TIME) {
-      freqState = STATE_TAP;
+    // COMING OUT OF SWELL
+    else if(~(PINA & (0b1<<PA3)) 
+            && freqState == STATE_SWELL) {
+      pressed = 0;
+      updateState(prevFreqState, &freqState, &prevFreqState);
     }
+    // TAP
+    // the the button is released and state was not swell
+    else if(~(PINA & (0b1<<PA3)) 
+            && pressed 
+            && freqState != STATE_SWELL) {
+      pressed = 0;
+      updateState(STATE_TAP, &freqState, &prevFreqState);
+    }
+    // POT
     // switch to pot control if pot rolled back
     else if(freqPot == ADC_OFFSET) {
-      freqState = STATE_POT;
+      updateState(STATE_POT, &freqState, &prevFreqState);
     }
+    // DEFAULT
+    // else {
+    //   freqState = prevFreqState;
+    //   // updateState(prevFreqState, &freqState, &prevFreqState);
+    // }
 
     // CALCULATE FREQUENCY CONTROL VALUE
     freqCon = calc_freq(freqPot, 
                         subPot, 
                         tapVal, 
+                        prevTapVal,
                         freqState, 
+                        prevFreqState,
                         freqCon,
                         loopCount);
 
@@ -136,24 +171,25 @@ int main(void) {
 
 unsigned int calc_freq(unsigned int  fPot, 
                        unsigned int  sPot, 
-                       unsigned long tapVal,
+                       unsigned long tVal,
+                       unsigned long prevtVal,
                        unsigned int  state,
+                       unsigned int  prevState,
                        unsigned int  fCon,
                        unsigned int  count) {
   unsigned long freq;
   // check to see if pot, tap tempo, or swell is controlling freq
   if(state == STATE_TAP) {
-    freq = tapVal>>TAP_DIV;
-    PORTB &= ~(PB2<<0b1); 
+    freq = tVal>>TAP_DIV;
   } 
   else if(state == STATE_SWELL) {
     if(count >= (SWELL_PER-1)) {
       if(fCon <= ADC_OFFSET) {
-        PORTB &= ~(PB2<<0b1);        
+        // PORTB &= ~(PB2<<0b1);        
         freq = fCon;
       }
       else {
-        PORTB |= (PB2<<0b1);
+        // PORTB |= (PB2<<0b1);
         freq = fCon - SWELL_DEC;
       }
     }
@@ -192,7 +228,18 @@ unsigned int calc_freq(unsigned int  fPot,
   }
 }
 
+// FUNCTION
+// updates state variable and previous state variable only if state change
 
+void updateState(unsigned int  new,
+                 unsigned int* statePtr,
+                 unsigned int* prevPtr) {
+  unsigned int current = *statePtr;
+  if(new != current) {
+    *prevPtr = current;
+    *statePtr = new;
+  }
+}
 
 
 

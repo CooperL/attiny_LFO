@@ -3,7 +3,8 @@
 // FUNCTION
 // initialize input capture module
 void init_in_cap(unsigned long* tapAddr, 
-	             unsigned int* stateAddr) {
+	             unsigned int* stateAddr,
+	             unsigned int* pressedAddr) {
   // DATA DIRECTION REGISTER
   // DDRA3 = 0: PA3 is input
   DDRA &= ~(0b1<<PA3);
@@ -20,6 +21,9 @@ void init_in_cap(unsigned long* tapAddr,
 
   // initialzie state ptr
   statePtr = stateAddr;
+
+  // initialize pressed ptr
+  pressedPtr = pressedAddr;
 
   // enable interrupt
   en_in_cap_interrupt();
@@ -49,8 +53,13 @@ ISR(PCINT0_vect) {
 		// freq state is tap
 		// *statePtr = STATE_TAP;
 
+		// button has been pressed
+		*pressedPtr = 1;
+
 		// record time
-		*tapTimePtr = tapOverflowCount;
+		if(*statePtr == STATE_TAP) {
+			*tapTimePtr = tapOverflowCount;
+		}
 
 		// reset phase accumulator
 		phaseAcc = 0;

@@ -25,10 +25,12 @@
 unsigned long  tapOverflowCount;
 unsigned int*  statePtr;
 unsigned long* tapTimePtr;
+unsigned int*  pressedPtr;
 
 // function declarations
 void init_in_cap(unsigned long* tapAddr, 
-	             unsigned int*  stateAddr);
+	             unsigned int*  stateAddr,
+	             unsigned int*  pressedAddr);
 void en_in_cap_interrupt(void);
 
 #endif

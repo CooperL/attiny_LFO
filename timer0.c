@@ -112,7 +112,7 @@ ISR(TIM0_COMPA_vect) {
         // calculate difference between next wave val and current
         diff = (int) next - (int) curr;
         interp = rem*diff;
-        OCR1A = curr + interp + (PWM_RES>>1);
+        OCR1A = curr + interp + (PWM_RES>>1) - 1;
       } 
     }
   }
